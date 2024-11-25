@@ -1,0 +1,26 @@
+- name: Install wireguard tools
+  ansible.builtin.package:
+    name: "{{ item }}"
+  loop:
+    - wireguard-tools
+    - qrencode
+
+- name: Wireguard server config
+  template:
+    src: files/wireguard-server.conf
+    dest: /etc/wireguard/wg0.conf
+    mode: "0600"
+    backup: true
+  register: wireguard_conf
+
+- name: Enable wireguard
+  service:
+    name: wg-quick@wg0
+    enabled: true
+
+- name: Restart wireguard
+  service:
+    name: wg-quick@wg0
+    state: restarted
+  when: wireguard_conf.changed
+
